@@ -17,6 +17,7 @@ class Grid:
         [0, 4, 9, 2, 0, 6, 0, 0, 7]
     ]
 
+    #constructor to initialize var
     def __init__(self, rows, cols, width, height):
         self.rows = rows
         self.cols = cols
@@ -26,9 +27,11 @@ class Grid:
         self.model = None
         self.selected = None
 
+    #model is the board that is sent to the solver function to verify if the board is solved, updates model when board needs to be sent to the solver function
     def update_model(self):
         self.model = [[self.cubes[i][j].value for j in range(self.cols)] for i in range(self.rows)]
 
+    #setting permanent value that user inputs
     def place(self, val):
         row, col = self.selected
         if self.cubes[row][col].value == 0:
@@ -43,6 +46,7 @@ class Grid:
                 self.update_model()
                 return False
 
+    #sets the temporary value for a specific cube
     def sketch(self, val):
         row, col = self.selected
         self.cubes[row][col].set_temp(val)
@@ -63,6 +67,7 @@ class Grid:
             for j in range(self.cols):
                 self.cubes[i][j].draw(win)
 
+    #returns the selected cube
     def select(self, row, col):
         # Reset all other
         for i in range(self.rows):
@@ -72,11 +77,13 @@ class Grid:
         self.cubes[row][col].selected = True
         self.selected = (row, col)
 
+    #sets the temporary value back to nothing (removes temp value)
     def clear(self):
         row, col = self.selected
         if self.cubes[row][col].value == 0:
             self.cubes[row][col].set_temp(0)
 
+    #returns coordinate of the selected cube
     def click(self, pos):
         """
         :param: pos
@@ -89,7 +96,7 @@ class Grid:
             return (int(y),int(x))
         else:
             return None
-
+    #check if no empty squares are on the board
     def is_finished(self):
         for i in range(self.rows):
             for j in range(self.cols):
@@ -104,6 +111,7 @@ class Cube:
 
     def __init__(self, value, row, col, width ,height):
         self.value = value
+        #value user can sketch in before locking in
         self.temp = 0
         self.row = row
         self.col = col
@@ -140,10 +148,10 @@ def redraw_window(win, board, time, strikes):
     # Draw time
     fnt = pygame.font.SysFont("comicsans", 40)
     text = fnt.render("Time: " + format_time(time), 1, (0,0,0))
-    win.blit(text, (540 - 160, 560))
+    win.blit(text, (320, 540))
     # Draw Strikes
     text = fnt.render("X " * strikes, 1, (255, 0, 0))
-    win.blit(text, (20, 560))
+    win.blit(text, (20, 540))
     # Draw grid and board
     board.draw(win)
 
@@ -199,13 +207,18 @@ def main():
                     if board.cubes[i][j].temp != 0:
                         if board.place(board.cubes[i][j].temp):
                             print("Success")
+                            strikes -= 1
                         else:
                             print("Wrong")
                             strikes += 1
                         key = None
 
                         if board.is_finished():
-                            print("Game over")
+                            print("Game Over")
+                            run = False
+
+                        if strikes > 3:
+                            print("Game Over")
                             run = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
